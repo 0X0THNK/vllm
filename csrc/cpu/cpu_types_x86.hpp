@@ -5,8 +5,8 @@
 #include <immintrin.h>
 #include <torch/all.h>
 
-#ifndef __AVX2__
-static_assert(false, "AVX2 must be supported for the current implementation.");
+#ifndef __AVX__
+static_assert(false, "AVX must be supported for the current implementation.");
 #endif
 
 namespace vec_op {
@@ -740,17 +740,17 @@ inline BF16Vec16::BF16Vec16(const FP32Vec16& v)
           _mm512_bsrli_epi128(_mm512_castps_si512(v.reg), 2))) {}
   #else
 namespace {
-__m128i FP32Vec8_to_BF16Vec8_avx2(__m256 a) {
-  __m256i ai = _mm256_castps_si256(a);
-  ai = _mm256_srli_epi32(ai, 16);
-  ai = _mm256_packus_epi32(ai, ai);
-  ai = _mm256_permute4x64_epi64(ai, 0b00111001);
-  return _mm256_extracti128_si256(ai, 0);
+__m128i FP32Vec8_to_BF16Vec8_avx(__m256 a) {
+  __m128 lo = _mm256_castps256_ps128(a);
+  __m128 hi = _mm256_extractf128_ps(a, 1);
+  __m128i lo_i = _mm_srli_epi32(_mm_castps_si128(lo), 16);
+  __m128i hi_i = _mm_srli_epi32(_mm_castps_si128(hi), 16);
+  return _mm_packus_epi32(lo_i, hi_i);
 }
 }  // namespace
 
 inline BF16Vec8::BF16Vec8(const FP32Vec8& v)
-    : reg(FP32Vec8_to_BF16Vec8_avx2(v.reg)) {}
+    : reg(FP32Vec8_to_BF16Vec8_avx(v.reg)) {}
 
 inline BF16Vec16::BF16Vec16(const FP32Vec16& v) {
   BF16Vec8 low = BF16Vec8(FP32Vec8(v.reg_low));
