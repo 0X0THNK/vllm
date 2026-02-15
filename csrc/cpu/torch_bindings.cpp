@@ -182,7 +182,7 @@ TORCH_LIBRARY_EXPAND(TORCH_EXTENSION_NAME, ops) {
   ops.impl("rotary_embedding", torch::kCPU, &rotary_embedding);
 
   // Quantization
-#if defined(__AVX512F__) || (defined(__aarch64__) && !defined(__APPLE__)) || \
+#if defined(__AVX__) || (defined(__aarch64__) && !defined(__APPLE__)) || \
     defined(__powerpc64__)
   // Helper function to release oneDNN handlers
   ops.def("release_dnnl_matmul_handler(int handler) -> ()",
@@ -231,7 +231,7 @@ TORCH_LIBRARY_EXPAND(TORCH_EXTENSION_NAME, ops) {
 #endif
 
 // SHM CCL
-#if defined(__AVX512F__) || (defined(__aarch64__) && !defined(__APPLE__))
+#if defined(__AVX__) || (defined(__aarch64__) && !defined(__APPLE__))
   ops.def(
       "init_shm_manager(str name, int group_size, int rank, int thread_num) -> "
       "int",
@@ -253,7 +253,7 @@ TORCH_LIBRARY_EXPAND(TORCH_EXTENSION_NAME, ops) {
   ops.impl("shm_send_tensor_list", torch::kCPU, &shm_send_tensor_list);
   ops.def("shm_recv_tensor_list(int handle, int src) -> Tensor[](a)",
           &shm_recv_tensor_list);
-#endif  // #if defined(__AVX512F__) || defined(__aarch64__)
+#endif  // #if defined(__AVX__) || defined(__aarch64__)
 
   // sgl-kernels
 #if defined(__AVX512BF16__) && defined(__AVX512F__) && defined(__AVX512VNNI__)
@@ -303,7 +303,7 @@ TORCH_LIBRARY_EXPAND(TORCH_EXTENSION_NAME, ops) {
   ops.def("dynamic_per_token_scaled_fp8_quant() -> ()", placeholder_op);
 
   // WNA16
-#if defined(__AVX512F__)
+#if defined(__AVX__)
   ops.def(
       "cpu_gemm_wna16(Tensor input, Tensor q_weight, Tensor(a2!) output, "
       "Tensor scales, Tensor? zeros, Tensor? g_idx, Tensor? bias, SymInt "
@@ -312,7 +312,7 @@ TORCH_LIBRARY_EXPAND(TORCH_EXTENSION_NAME, ops) {
 #endif
 
   // fused moe
-#if defined(__AVX512F__)
+#if defined(__AVX__)
   ops.def(
       "prepack_moe_weight(Tensor weight, Tensor(a1!) packed_weight, str isa) "
       "-> ()");

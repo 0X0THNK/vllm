@@ -103,6 +103,24 @@ Build and install vLLM:
 VLLM_TARGET_DEVICE=cpu uv pip install . --no-build-isolation
 ```
 
+For Linux x86_64 hosts where you want to force an AVX-only (AVX1) build path,
+you can use the helper script in this repo:
+
+```bash
+# from inside this repository
+bash scripts/install_vllm_avx1_linux.sh
+
+# or against a specific checkout/ref
+VLLM_SRC_DIR=$HOME/src/vllm VLLM_REF=main bash scripts/install_vllm_avx1_linux.sh
+```
+
+The helper script installs CPU PyTorch (`torch==2.10.0+cpu`) explicitly before
+installing vLLM dependencies, and you can override it if needed:
+
+```bash
+TORCH_SPEC='torch==2.10.0+cpu' bash scripts/install_vllm_avx1_linux.sh
+```
+
 If you want to develop vLLM, install it in editable mode instead.
 
 ```bash
