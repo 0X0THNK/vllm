@@ -14,6 +14,7 @@ set -euo pipefail
 #   VLLM_REF=main                         # ignored when using current repo
 #   INSTALL_MODE=editable                 # editable | wheel
 #   INSTALL_SYSTEM_DEPS=1                 # try apt install (best effort)
+#   TORCH_SPEC=torch==2.10.0+cpu          # override torch package spec if needed
 
 PYTHON_BIN="${PYTHON_BIN:-python3}"
 VENV_DIR="${VENV_DIR:-$HOME/.venvs/vllm-avx1}"
@@ -21,6 +22,7 @@ VLLM_SRC_DIR="${VLLM_SRC_DIR:-}"
 VLLM_REF="${VLLM_REF:-main}"
 INSTALL_MODE="${INSTALL_MODE:-editable}"
 INSTALL_SYSTEM_DEPS="${INSTALL_SYSTEM_DEPS:-0}"
+TORCH_SPEC="${TORCH_SPEC:-torch==2.10.0+cpu}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 USE_CURRENT_REPO=0
@@ -142,6 +144,14 @@ detect_or_prepare_source() {
 }
 
 install_python_deps() {
+  log "Installing explicit torch dependency: $TORCH_SPEC"
+  python -m pip install -v "$TORCH_SPEC" \
+    --extra-index-url https://download.pytorch.org/whl/cpu
+  python - <<'PY'
+import torch
+print(f"Using torch {torch.__version__}")
+PY
+
   python -m pip install -v -r "$VLLM_SRC_DIR/requirements/cpu-build.txt" \
     --extra-index-url https://download.pytorch.org/whl/cpu
   python -m pip install -v -r "$VLLM_SRC_DIR/requirements/cpu.txt" \
